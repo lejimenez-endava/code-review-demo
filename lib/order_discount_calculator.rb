@@ -23,13 +23,19 @@ class OrderDiscountCalculator
   private
 
   def apply_discount(total, discount)
-    case discount.type
-    when "percentage"
-      total - (total * discount.value / 100.0)
-    when "fixed"
-      [total - discount.value, 0].max
-    else
-      raise UnknownDiscountError, "Unknown discount type: #{discount.type}"
-    end
+    public_send("apply_#{discount.type}_discount", total, discount)
+  end
+
+  def apply_percentage_discount(total, discount)
+    total - (total * discount.value / 100.0)
+  end
+
+  def apply_fixed_discount(total, discount)
+    [total - discount.value, 0].max
+  end
+
+  def apply_bulk_discount(total, discount)
+    per_item_discount = discount.value / @order.item_count
+    total - (per_item_discount * discount.value)
   end
 end
